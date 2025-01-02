@@ -9,6 +9,7 @@ class App {
    * боковой колонки
    * */
   static init() {
+    console.log('Инициализация приложения начата.'); // Логирование начала инициализации приложения
     this.element = document.querySelector(".app");
     this.content = document.querySelector(".content-wrapper");
 
@@ -20,6 +21,7 @@ class App {
     Sidebar.init();
 
     this.initUser();
+    console.log('Инициализация приложения завершена.'); // Логирование завершения
   }
 
   /**
@@ -208,3 +210,5 @@ class App {
     this.getForm("createExpense").renderAccountsList();
   }
 }
+
+
