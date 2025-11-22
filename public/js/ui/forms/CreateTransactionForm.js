@@ -20,31 +20,36 @@ class CreateTransactionForm extends AsyncForm {
      * Обновляет в форме всплывающего окна выпадающий список.
      */
     renderAccountsList() {
-        Account.list((err, response) => {
+        Account.list({}, (err, response) => {
             if (err) {
-                console.error('Ошибка при получении списка счетов:', err); // Логирование ошибки
+                console.error('Ошибка при получении списка счетов:', err);
                 return;
             }
-            console.log('Ответ от сервера:', response); // Логирование ответа от сервера
 
-            if (response && Array.isArray(response.accounts)) {
+            if (response && response.success && Array.isArray(response.data)) {
                 const accountsSelect = this.element.querySelector('select[name="account_id"]');
-                accountsSelect.innerHTML = '';
+                if (accountsSelect) {
+                    accountsSelect.innerHTML = '';
 
-                response.accounts.forEach(account => {
-                    const option = document.createElement('option');
-                    option.value = account.id;
-                    option.textContent = account.name;
-                    accountsSelect.appendChild(option);
-                });
-            } else if (response.error) {
-                console.error('Ошибка от сервера:', response.error);
+                    response.data.forEach(account => {
+                        const option = document.createElement('option');
+                        option.value = account.id;
+                        option.textContent = account.name;
+                        accountsSelect.appendChild(option);
+                    });
+                }
             } else {
-                console.error('Ожидался массив, но получено:', response);
+                console.error('Ошибка при получении списка счетов:', response ? response.error : 'Неизвестная ошибка');
             }
         });
     }
 
+  /**
+   * Создаёт новую транзакцию (доход или расход)
+   * с помощью Transaction.create. По успешному результату
+   * вызывает App.update(), сбрасывает форму и закрывает окно,
+   * в котором находится форма
+   * */
     onSubmit(data) {
         Transaction.create(data, (err, response) => {
             if (err) {
@@ -54,13 +59,16 @@ class CreateTransactionForm extends AsyncForm {
 
             if (response && response.success) {
                 this.element.reset();
-                const modal = App.getModal('new-transaction');
+                // Определяем, какое модальное окно закрывать
+                const isIncome = this.element.id === 'new-income-form';
+                const modalName = isIncome ? 'newIncome' : 'newExpense';
+                const modal = App.getModal(modalName);
                 if (modal) {
                     modal.close();
                 }
                 App.update();
             } else {
-                console.error('Не удалось создать транзакцию:', response);
+                console.error('Не удалось создать транзакцию:', response ? response.error : 'Неизвестная ошибка');
             }
         });
     }

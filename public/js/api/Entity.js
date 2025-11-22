@@ -9,15 +9,16 @@ class Entity {
    * Это могут быть счета или доходы/расходы
    * (в зависимости от того, что наследуется от Entity)
    * */
-  static list(callback) {
+  static list(data, callback) {
     createRequest({
-        url: this.URL,
-        method: 'GET',
-        callback: (err, response) => {
-            callback(err, response);
-        }
+      url: this.URL,
+      method: 'GET',
+      data: data || {},
+      callback: (err, response) => {
+        callback(err, response);
+      }
     });
-}
+  }
 
   /**
    * Создаёт счёт или доход/расход с помощью запроса
@@ -26,14 +27,14 @@ class Entity {
    * */
   static create(data, callback) {
     createRequest({
-        url: this.URL,
-        method: 'POST',
-        data,
-        callback: (err, response) => {
-            callback(err, response);
-        }
+      url: this.URL,
+      method: 'PUT',
+      data,
+      callback: (err, response) => {
+        callback(err, response);
+      }
     });
-}
+  }
 
   /**
    * Удаляет информацию о счёте или доходе/расходе
@@ -41,11 +42,12 @@ class Entity {
    * */
   static remove(data, callback) {
     createRequest({
-        url: this.URL + '/' + data.id,
-        method: 'DELETE',
-        callback: (err, response) => {
-            callback(err, response);
-        }
+      url: this.URL,
+      method: 'DELETE',
+      data: data,
+      callback: (err, response) => {
+        callback(err, response);
+      }
     });
   }
 }

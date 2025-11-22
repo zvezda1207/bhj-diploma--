@@ -10,7 +10,6 @@ class User {
    * локальном хранилище.
    * */
   static setCurrent(user) {
-    console.log('Установка текущего пользователя:', user); // Логируем текущего пользователя
     localStorage.setItem('currentUser', JSON.stringify(user));
   }
 
@@ -19,7 +18,6 @@ class User {
    * пользователе из локального хранилища.
    * */
   static unsetCurrent() {
-    console.log('Сброс текущего пользователя'); // Логируем сброс пользователя
     localStorage.removeItem('currentUser');
   }
 
@@ -28,8 +26,8 @@ class User {
    * из локального хранилища
    * */
   static current() {
-    console.log('Сброс текущего пользователя'); // Логируем сброс пользователя
-    return JSON.parse(localStorage.getItem('currentUser'));
+    const userData = localStorage.getItem('currentUser');
+    return userData ? JSON.parse(userData) : null;
   }
 
   /**
@@ -37,13 +35,22 @@ class User {
    * авторизованном пользователе.
    * */
   static fetch(callback) {
-    console.log('Сброс текущего пользователя'); // Логируем сброс пользователя
     createRequest({
       url: this.URL + '/current',
       method: 'GET',
       callback: (err, response) => {
-        console.log('Ответ от сервера для текущего пользователя:', response); // Логируем ответ
+        if (err) {
+          this.unsetCurrent();
           callback(err, response);
+          return;
+        }
+
+        if (response && response.success && response.user) {
+          this.setCurrent(response.user);
+        } else {
+          this.unsetCurrent();
+        }
+        callback(err, response);
       }
     });
   }
@@ -54,60 +61,69 @@ class User {
    * сохранить пользователя через метод
    * User.setCurrent.
    * */
+
   static login(data, callback) {
-    console.log('Запрос на вход с данными:', data); // Логируем данные для входа
     createRequest({
       url: this.URL + '/login',
       method: 'POST',
-      data,
+      data: data,
       callback: (err, response) => {
-        console.log('Ответ от сервера на запрос входа:', response); // Логируем ответ на вход
-          if (response && response.user) {
-              this.setCurrent(response.user);
-          }
-          callback(err, response);
+        if (err) {
+          return callback(err, response);
+        }
+
+        if (response && response.success && response.user) {
+          this.setCurrent(response.user);
+        }
+
+        callback(err, response);
       }
     });
   }
-
   /**
    * Производит попытку регистрации пользователя.
    * После успешной авторизации необходимо
    * сохранить пользователя через метод
    * User.setCurrent.
    * */
+
   static register(data, callback) {
-    console.log('Запрос на регистрацию с данными:', data); // Логируем данные для регистрации
     createRequest({
       url: this.URL + '/register',
       method: 'POST',
-      data,
+      data: data,
       callback: (err, response) => {
-        console.log('Ответ от сервера на запрос регистрации:', response); // Логируем ответ на регистрацию
-          if (response && response.user) {
-              this.setCurrent(response.user);
-          }
-          callback(err, response);
+        if (err) {
+          return callback(err, response);
+        }
+
+        if (response && response.success && response.user) {
+          this.setCurrent(response.user);
+        }
+
+        callback(err, response);
       }
     });
   }
-
   /**
    * Производит выход из приложения. После успешного
    * выхода необходимо вызвать метод User.unsetCurrent
    * */
+
+
   static logout(callback) {
-    console.log('Запрос на выход'); // Логируем запрос на выход
     createRequest({
       url: this.URL + '/logout',
       method: 'POST',
       callback: (err, response) => {
-        console.log('Ответ от сервера на запрос выхода:', response); // Логируем ответ на выход
-          if (!err) {
-              this.unsetCurrent();
-          }
-          callback(err, response);
+        if (err) {
+          callback(err);
+        } else {
+          this.unsetCurrent();
+          callback(null, response);
+        }
       }
     });
-  }  
+  }
 }
+

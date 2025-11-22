@@ -7,24 +7,19 @@ class LoginForm extends AsyncForm {
      * закрывает окно, в котором находится форма
      */
     onSubmit(data) {
-        // Данные для логина извлекаем из параметра data
-        console.log('Данные для логина:', data); // Логирование данных для проверки
-
         User.login(data, (err, response) => {
             if (err) {
                 console.error('Ошибка при авторизации:', err);
-                return; 
+                return;
             }
 
-            console.log('Ответ от сервера:', response); // Логируем ответ от сервера
-            
-            if (response && response.user) {
-                App.setState('user-logged'); // Устанавливаем состояние, что пользователь залогинен
-                this.element.reset(); // Сбрасываем форму
-                const modal = App.getModal('login'); // Получаем модальное окно
-                if (modal) modal.close(); // Закрываем модальное окно
+            if (response && response.success && response.user) {
+                App.setState('user-logged');
+                this.element.reset();
+                const modal = App.getModal('login');
+                if (modal) modal.close();
             } else {
-                console.error('Ошибка при авторизации:', response.error || 'Неизвестная ошибка');
+                console.error('Ошибка при авторизации:', response ? response.error : 'Неизвестная ошибка');
             }
         });
     }
